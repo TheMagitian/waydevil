@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include "../include/colors.h"
@@ -7,47 +6,37 @@
 extern void display_usage();
 extern char *get_wm_env_var();
 
+static char *default_path = "~/.config/waybar/config";
+
 int main(int argc, char **argv) {
   int i;
-  char *wm = (char *)malloc(20 * sizeof(char));
-  char *f_path = (char *)malloc(40 * sizeof(char));
-  int default_config = 0;
+  char *wm = get_wm_env_var();
+  char *f_path = default_path;
   
-  if (argc < 2) {
-    wm = argv[1];
-	default_config = 1;
+  for (i=0; i<argc; i++) {
+	if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+	  display_usage();
+	  return 0;
+	}
   }
 
-  wm = get_wm_env_var();
+  if (argc==2) {
+	if (access(argv[1], F_OK)==0) {
+	  f_path = argv[1];
+	} else {
+	  /* if (wm) free(wm); */
+	  wm = strdup(argv[1]);
+	}
+  }
+
+  else if (argc==3){
+	/* if (wm) free(wm); */
+	wm = argv[1];
+	f_path = argv[2];
+  }
+
   printf("%s\nDetected WM:%s %s%s%s\n", BOLD, RESET, GREEN, wm, RESET);
-  if (default_config) {
-	f_path = "~/.config/waybar/";
-	printf("%s%sUsing Waybar's config file located at %s%s%s%s", RESET, ITALIC, RESET, GREEN, f_path, RESET);
-  }
+  printf("%s%sUsing Waybar's config file located at %s%s%s%s", RESET, ITALIC, RESET, GREEN, f_path, RESET);
 
-  if (!default_config) {
-	for (i=1; i<argc; i++) {
-	  if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) {
-		display_usage();
-		return 0;
-	  }
-	  
-	  char *f_path = argv[i + 1];
-
-      if (!strcmp(argv[i], "--config") && !access(f_path, F_OK)) {
-        printf("%s%sUsing Waybar's config file located at %s%s%s%s", RESET, ITALIC, RESET, GREEN, f_path, RESET);
-      } else {
-        if (access(f_path, F_OK) == 0) {
-          printf("%sEncountered error while accessing config file.%s", RED, RESET);
-          return -1;
-        } else {
-		  display_usage();
-		  printf("%sInvalid Usage.%s Consult %swaydevil --help%s for more information.", BOLD, RESET, ITALIC, RESET);
-        }
-      }
-    }
-  }
-
-  /* free(wm); */
   return 0;
 }
