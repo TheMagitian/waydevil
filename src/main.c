@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   if (argc==2) {
 	if (access(argv[1], F_OK)==0) {
 	  f_path = argv[1];
-	} else {
+	} else if (!(argv[1][0] == (char)'/')) { // assuming that the WM's name doesn't start with `/`
 	  /* if (wm) free(wm); */
 	  wm = strdup(argv[1]);
 	}
@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
   else if (argc==3){
 	/* if (wm) free(wm); */
 	wm = argv[1];
-	f_path = argv[2];
+	if (access(argv[2], F_OK)==0) f_path = argv[2];
   }
 
   printf("%s\nDetected WM:%s %s%s%s\n", BOLD, RESET, GREEN, wm, RESET);
